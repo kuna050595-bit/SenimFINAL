@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SENIM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+    body{margin:0;background:linear-gradient(180deg,#edf4ff,#f8fafc);font-family:'Manrope',sans-serif;color:#0f172a}
+    .app{max-width:460px;min-height:100vh;margin:0 auto;background:#fff;box-shadow:0 20px 60px rgba(15,23,42,.12);overflow:hidden}
+    .screen{display:none;min-height:100vh;padding:20px;flex-direction:column}.screen.active{display:flex}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:28px;box-shadow:0 14px 30px rgba(15,23,42,.06)}
+    .primary{background:linear-gradient(135deg,#0f62fe,#1d4ed8);color:#fff;border:none;border-radius:18px;padding:16px;font-weight:800;width:100%;cursor:pointer;font-size:15px;font-family:inherit}
+    .primary:disabled{opacity:0.6;cursor:not-allowed}
+    .secondary{background:#fff;color:#0f172a;border:1px solid #e2e8f0;border-radius:18px;padding:15px;font-weight:700;width:100%;cursor:pointer;font-size:15px;font-family:inherit}
+    .ghost{background:#f1f5f9;color:#0f172a;border:none;border-radius:14px;padding:10px 12px;font-weight:700;cursor:pointer;font-family:inherit}
+    .input{width:100%;border:none;outline:none;background:#f1f5f9;border-radius:18px;padding:15px 16px;font:inherit;box-sizing:border-box;font-size:15px}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase}
+    .escrow{background:#dbeafe;color:#1d4ed8}.review{background:#fef3c7;color:#b45309}.done{background:#dcfce7;color:#15803d}.dispute{background:#fee2e2;color:#b91c1c}
+    .tabbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 20px;background:#fff;border-top:1px solid #e2e8f0;margin:auto -20px -20px}
+    .tab{font-size:11px;text-align:center;color:#94a3b8;font-weight:700;cursor:pointer}.tab.active{color:#0f62fe}.tab i{font-size:18px;display:block;margin-bottom:6px}
+    .msg{max-width:82%;padding:12px 14px;border-radius:18px;font-size:13px;line-height:1.45}.msg.ai{background:#f1f5f9;align-self:flex-start}.msg.user{background:#0f62fe;color:#fff;align-self:flex-end}
+    .noscroll{overflow:auto;scrollbar-width:none}.noscroll::-webkit-scrollbar{display:none}
+    .otp-input{width:52px;height:56px;background:#f1f5f9;border:2px solid transparent;border-radius:14px;text-align:center;font-weight:800;font-size:22px;font-family:inherit;outline:none;transition:.2s}
+    .otp-input:focus{border-color:#0f62fe;background:#eff6ff}
+    .err{color:#ef4444;font-size:13px;font-weight:700;text-align:center;margin-top:8px;min-height:20px}
+    .tabs-auth{display:flex;gap:4px;background:#f1f5f9;border-radius:16px;padding:4px;margin-bottom:24px}
+    .tab-auth{flex:1;padding:10px;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;background:transparent;color:#94a3b8;font-family:inherit}
+    .tab-auth.active{background:#fff;color:#0f62fe;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <section id="welcome" class="screen active justify-center text-center">
+    <div class="w-28 h-28 rounded-[34px] mx-auto mb-8 flex items-center justify-center shadow-2xl bg-[linear-gradient(135deg,#0f62fe,#14b8a6)]">
+      <i class="fa-solid fa-shield-halved text-white text-5xl"></i>
+    </div>
+    <p class="text-xs font-black uppercase tracking-[0.35em] text-blue-600 mb-3">Senim</p>
+    <h1 class="text-4xl font-black leading-tight mb-4">Безопасные сделки для товаров и услуг</h1>
+    <p class="text-slate-500 leading-relaxed px-6 mb-10">Эскроу, договоры, подтверждения и арбитраж.</p>
+    <button class="primary" onclick="go('login')">Войти / Зарегистрироваться</button>
+  </section>
+
+  <section id="login" class="screen justify-center">
+    <button class="w-11 h-11 rounded-2xl bg-slate-50 mb-8 self-start" onclick="go('welcome')"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mb-6"><i class="fa-solid fa-shield-halved"></i></div>
+    <h2 class="text-3xl font-black mb-6">Добро пожаловать</h2>
+    <div class="tabs-auth">
+      <button class="tab-auth active" id="tabLogin" onclick="switchTab('login')">Войти</button>
+      <button class="tab-auth" id="tabRegister" onclick="switchTab('register')">Регистрация</button>
+    </div>
+    <div class="space-y-3">
+      <input id="authEmail" class="input" type="email" placeholder="Email">
+      <input id="authPassword" class="input" type="password" placeholder="Пароль (мин. 6 символов)" onkeydown="if(event.key==='Enter')submitAuth()">
+    </div>
+    <p id="authErr" class="err"></p>
+    <button class="primary mt-4" id="authBtn" onclick="submitAuth()">Войти</button>
+  </section>
+
+
+  <section id="home" class="screen">
+    <div class="flex items-start justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <img id="userAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-14 h-14 rounded-[18px] bg-slate-100" alt="Avatar">
+        <div>
+          <h2 id="userName" class="text-lg font-black">...</h2>
+          <p class="text-xs text-slate-500">Покупатель и продавец</p>
+          <div class="text-[11px] text-amber-500 font-bold mt-1"><i class="fa-solid fa-star"></i> 5.0</div>
+        </div>
+      </div>
+      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('notifications')"><i class="fa-solid fa-bell text-slate-500"></i></button>
+    </div>
+    <div class="card p-6 mb-6 text-white bg-[linear-gradient(145deg,#0f172a,#172554)]">
+      <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-2">Эскроу баланс</p>
+      <h3 id="balance" class="text-3xl font-black mb-4">0 ₸</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <button class="ghost text-white bg-white/10" onclick="go('protection')">Как работает</button>
+        <button class="ghost text-white bg-white/10" onclick="loadDeals();go('history')">Мои сделки</button>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <button onclick="go('type')" class="card p-5 text-left"><div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-plus"></i></div><p class="font-black">Новая сделка</p><p class="text-xs text-slate-500 mt-1">Договор и холдирование</p></button>
+      <button onclick="go('actions')" class="card p-5 text-left"><div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-bolt"></i></div><p class="font-black">Шаблоны</p><p class="text-xs text-slate-500 mt-1">Быстрое создание</p></button>
+    </div>
+    <div id="events" class="card px-5 flex-1 noscroll"><div class="py-8 text-center text-slate-400 text-sm">События появятся здесь</div></div>
+    <div class="tabbar">
+      <div class="tab active" onclick="go('home')"><i class="fa-solid fa-house"></i>Главная</div>
+      <div class="tab" onclick="loadDeals();go('history')"><i class="fa-solid fa-briefcase"></i>Сделки</div>
+      <div class="tab" onclick="go('protection')"><i class="fa-solid fa-shield"></i>Защита</div>
+      <div class="tab" onclick="go('settings')"><i class="fa-solid fa-gear"></i>Профиль</div>
+    </div>
+  </section>
+
+  <section id="history" class="screen">
+    <div class="flex items-center justify-between mb-6">
+      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2 class="text-xl font-black">Ваши сделки</h2>
+      <button class="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600" onclick="go('type')"><i class="fa-solid fa-plus"></i></button>
+    </div>
+    <div class="flex gap-2 mb-5 overflow-auto noscroll bg-slate-100 p-1.5 rounded-full">
+      <button id="f-all" class="ghost !rounded-full bg-white text-blue-600" onclick="setFilter('all')">Все</button>
+      <button id="f-escrow" class="ghost !rounded-full" onclick="setFilter('escrow')">Эскроу</button>
+      <button id="f-review" class="ghost !rounded-full" onclick="setFilter('review')">Проверка</button>
+      <button id="f-dispute" class="ghost !rounded-full" onclick="setFilter('dispute')">Спор</button>
+      <button id="f-done" class="ghost !rounded-full" onclick="setFilter('done')">Завершено</button>
+    </div>
+    <div id="deals" class="card px-5 flex-1 noscroll"></div>
+  </section>
+
+  <section id="detail" class="screen">
+    <div class="flex items-center justify-between mb-6">
+      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('history')"><i class="fa-solid fa-arrow-left"></i></button>
+      <h2 class="text-xl font-black">Детали сделки</h2>
+      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="toast('Ссылка скопирована')"><i class="fa-solid fa-share-nodes"></i></button>
+    </div>
+    <div id="detailBody" class="flex-1 noscroll"></div>
+  </section>
+
+  <section id="dispute" class="screen">
+    <div class="flex items-center justify-between mb-5">
+      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('history')"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="text-center"><h2 id="disputeTitle" class="text-lg font-black">Арбитраж</h2><p class="text-[11px] uppercase tracking-[0.22em] text-red-500 font-black">В рассмотрении</p></div>
+      <div class="w-11 h-11 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center"><i class="fa-solid fa-gavel"></i></div>
+    </div>
+    <div id="chat" class="card p-4 flex-1 flex flex-col gap-2 noscroll bg-slate-50 mb-4"></div>
+    <div class="flex gap-2">
+      <input id="msgInput" class="input flex-1 !py-3 !px-4" placeholder="Ваше сообщение...">
+      <button class="w-12 h-12 rounded-2xl bg-blue-600 text-white" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </section>
+
+  <section id="type" class="screen">
+    <button class="w-11 h-11 rounded-2xl bg-slate-50 mb-4" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button>
+    <h2 class="text-3xl font-black mb-2">Создать сделку</h2>
+    <p class="text-slate-500 text-sm mb-8">Выберите тип сценария.</p>
+    <div class="grid grid-cols-2 gap-4">
+      <button onclick="pickType('product')" class="card p-6 text-center"><div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-mobile-screen-button text-xl"></i></div><p class="font-black">Товар</p><p class="text-xs text-slate-500 mt-1">Электроника и вещи</p></button>
+      <button onclick="pickType('service')" class="card p-6 text-center"><div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-code text-xl"></i></div><p class="font-black">Услуга</p><p class="text-xs text-slate-500 mt-1">Разработка и подряд</p></button>
+      <button onclick="pickType('rental')" class="card p-6 text-center"><div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-key text-xl"></i></div><p class="font-black">Аренда</p><p class="text-xs text-slate-500 mt-1">Жилье и техника</p></button>
+      <button onclick="pickType('vehicle')" class="card p-6 text-center"><div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-car-side text-xl"></i></div><p class="font-black">Авто</p><p class="text-xs text-slate-500 mt-1">Осмотр и передача</p></button>
+    </div>
+  </section>
+
+  <section id="form" class="screen">
+    <button class="w-11 h-11 rounded-2xl bg-slate-50 mb-4" onclick="go('type')"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="flex-1 noscroll pb-4">
+      <h2 class="text-2xl font-black mb-2">Параметры сделки</h2>
+      <p id="typeCaption" class="text-sm text-slate-500 mb-6">Заполните ключевые условия.</p>
+      <div class="space-y-4">
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Название сделки</label><input id="dealName" class="input" placeholder="Например: iPhone 15 Pro"></div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Сумма, ₸</label><input id="dealPrice" type="number" class="input" placeholder="Введите стоимость" oninput="recalc()"></div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Контрагент</label><input id="dealParty" class="input" placeholder="Имя продавца или исполнителя"></div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Срок исполнения</label><input id="dealDeadline" class="input" placeholder="Например: 3 дня / до 25 июля"></div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Условия</label><textarea id="dealDesc" rows="4" class="input" placeholder="Опишите условия возврата и приемки"></textarea></div>
+      </div>
+    </div>
+    <button class="primary" onclick="toPayment()">Перейти к холдированию</button>
+  </section>
+
+  <section id="payment" class="screen">
+    <button class="w-11 h-11 rounded-2xl bg-slate-50 mb-4" onclick="go('form')"><i class="fa-solid fa-arrow-left"></i></button>
+    <h2 class="text-2xl font-black mb-5">Безопасная оплата</h2>
+    <div class="card p-5 mb-6 bg-blue-50 border-blue-100">
+      <div class="flex gap-4"><div class="w-12 h-12 bg-blue-600 rounded-2xl text-white flex items-center justify-center"><i class="fa-solid fa-lock"></i></div><div><p class="font-black text-blue-950">Эскроу-защита активна</p><p class="text-sm text-blue-700 mt-1">Средства блокируются до приемки.</p></div></div>
+    </div>
+    <div class="card p-6 space-y-3 mb-6">
+      <div class="flex justify-between text-sm text-slate-500"><span>Сумма сделки</span><span id="payBase" class="font-black text-slate-900">0 ₸</span></div>
+      <div class="flex justify-between text-sm text-slate-500"><span>Комиссия SENIM (1%)</span><span id="payFee" class="font-black text-slate-900">0 ₸</span></div>
+      <div class="flex justify-between items-center pt-4 border-t border-slate-100"><span class="text-xl font-black">К списанию</span><span id="payTotal" class="text-2xl font-black text-blue-600">0 ₸</span></div>
+    </div>
+    <button class="primary" onclick="createDeal()">Создать защищённую сделку</button>
+  </section>
+
+  <section id="protection" class="screen">
+    <div class="flex items-center justify-between mb-6"><button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Как работает защита</h2><div class="w-11"></div></div>
+    <div class="space-y-4 flex-1">
+      <div class="card p-5"><div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-file-signature"></i></div><h3 class="font-black mb-2">1. Цифровой договор</h3><p class="text-sm text-slate-500">Стороны фиксируют предмет, сумму и сроки.</p></div>
+      <div class="card p-5"><div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-money-bill-transfer"></i></div><h3 class="font-black mb-2">2. Холдирование</h3><p class="text-sm text-slate-500">Деньги блокируются до приемки результата.</p></div>
+      <div class="card p-5"><div class="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-scale-balanced"></i></div><h3 class="font-black mb-2">3. Арбитраж</h3><p class="text-sm text-slate-500">ИИ-арбитр помогает разрешить спор.</p></div>
+    </div>
+  </section>
+
+  <section id="notifications" class="screen">
+    <div class="flex items-center justify-between mb-6"><button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Уведомления</h2><div class="w-11"></div></div>
+    <div class="card px-5 flex-1"><div class="py-8 text-center text-slate-400 text-sm">Уведомлений пока нет</div></div>
+  </section>
+
+  <section id="actions" class="screen">
+    <div class="flex items-center justify-between mb-6"><button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Шаблоны</h2><div class="w-11"></div></div>
+    <div class="card px-5">
+      <button class="w-full flex items-center gap-4 py-4 text-left" onclick="prefill('product')"><div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center"><i class="fa-solid fa-box-open"></i></div><div class="flex-1"><p class="font-black">Продажа товара</p><p class="text-xs text-slate-500 mt-1">Для техники и вещей</p></div><i class="fa-solid fa-chevron-right text-slate-300"></i></button>
+      <button class="w-full flex items-center gap-4 py-4 text-left border-t border-slate-100" onclick="prefill('service')"><div class="w-12 h-12 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center"><i class="fa-solid fa-laptop-code"></i></div><div class="flex-1"><p class="font-black">Digital-услуга</p><p class="text-xs text-slate-500 mt-1">Для дизайна и разработки</p></div><i class="fa-solid fa-chevron-right text-slate-300"></i></button>
+    </div>
+  </section>
+
+  <section id="settings" class="screen">
+    <div class="flex items-center justify-between mb-6"><button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Профиль</h2><div class="w-11"></div></div>
+    <div class="card p-5 mb-5">
+      <div class="flex items-center gap-4">
+        <img id="settingsAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-16 h-16 rounded-[20px] bg-slate-100" alt="Avatar">
+        <div><p id="settingsName" class="font-black text-lg">...</p><p id="settingsEmail" class="text-sm text-slate-500"></p><div class="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-black"><i class="fa-solid fa-circle-check"></i> Верифицирован</div></div>
+      </div>
+    </div>
+    <button class="secondary text-red-500 border-red-100" onclick="logout()"><i class="fa-solid fa-right-from-bracket mr-2"></i>Выйти</button>
+  </section>
+
+</div>
+
+<div id="loader" class="fixed inset-0 bg-slate-950/85 hidden items-center justify-center z-50 p-10">
+  <div class="text-center"><div class="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div><h3 id="loaderTitle" class="text-white font-black text-xl mb-2">Загрузка...</h3><p id="loaderDesc" class="text-slate-400 text-sm"></p></div>
+</div>
+<div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-sm font-bold px-4 py-3 rounded-2xl shadow-2xl whitespace-nowrap"></div>
+
+<script>
+  const SUPABASE_URL = 'https://voybxauaytyjzzhtibfz.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_xJu9-WWfcKECwUFjHOegbA_t5IUx3kL';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentUser = null, currentEmail = '', currentDealType = 'product', currentFilter = 'all', chatMessages = [];
+
+  function go(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+  function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.add('hidden'),2500)}
+  function spin(on,title='',desc=''){const l=document.getElementById('loader');l.style.display=on?'flex':'none';if(title)document.getElementById('loaderTitle').textContent=title;if(desc)document.getElementById('loaderDesc').textContent=desc}
+  function sum(v){return`${Number(v||0).toLocaleString('ru-RU')} ₸`}
+
+  function switchTab(mode){
+    window._authMode=mode;
+    document.getElementById('tabLogin').classList.toggle('active',mode==='login');
+    document.getElementById('tabRegister').classList.toggle('active',mode==='register');
+    document.getElementById('authBtn').textContent=mode==='login'?'Войти':'Зарегистрироваться';
+    document.getElementById('authErr').textContent='';
+  }
+
+  async function submitAuth(){
+    const email=document.getElementById('authEmail').value.trim();
+    const password=document.getElementById('authPassword').value;
+    if(!email||!password){document.getElementById('authErr').textContent='Заполните все поля';return}
+    if(password.length<6){document.getElementById('authErr').textContent='Пароль минимум 6 символов';return}
+    document.getElementById('authErr').textContent='';
+    const btn=document.getElementById('authBtn');btn.disabled=true;
+    const mode=window._authMode||'login';
+    let result;
+    if(mode==='login'){
+      result=await sb.auth.signInWithPassword({email,password});
+    } else {
+      result=await sb.auth.signUp({email,password});
+    }
+    btn.disabled=false;
+    const{data,error}=result;
+    if(error){document.getElementById('authErr').textContent=error.message;return}
+    if(mode==='register'&&data?.user&&!data?.session){
+      toast('Аккаунт создан! Теперь войдите.');
+      switchTab('login');return;
+    }
+    currentUser=data.user||data?.session?.user;
+    updateUserUI();await loadDeals();spin(false);go('home');toast('Добро пожаловать в Senim!');
+  }
+
+  async function logout(){await sb.auth.signOut();currentUser=null;go('welcome');toast('Вы вышли из аккаунта')}
+
+  function updateUserUI(){
+    if(!currentUser)return;
+    const email=currentUser.email||'';
+    const short=email.split('@')[0]||'Пользователь';
+    const av=`https://api.dicebear.com/7.x/avataaars/svg?seed=${short.slice(0,6)}`;
+    document.getElementById('userName').textContent=short;
+    document.getElementById('settingsName').textContent=short;
+    document.getElementById('settingsEmail').textContent=email;
+    document.getElementById('userAvatar').src=av;
+    document.getElementById('settingsAvatar').src=av;
+  }
+
+  async function loadDeals(){
+    if(!currentUser)return;
+    const{data}=await sb.from('deals').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+    renderDeals(data||[]);
+    const total=(data||[]).filter(d=>['escrow','review','dispute'].includes(d.status)).reduce((a,b)=>a+Number(b.price||0),0);
+    document.getElementById('balance').textContent=sum(total);
+  }
+
+  function renderDeals(deals){
+    const box=document.getElementById('deals');
+    const items=currentFilter==='all'?deals:deals.filter(d=>d.status===currentFilter);
+    if(!items.length){box.innerHTML='<div class="py-12 text-center"><div class="w-16 h-16 rounded-3xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-folder-open text-2xl"></i></div><p class="font-black mb-1">Сделок пока нет</p><p class="text-sm text-slate-500">Создайте первую защищённую сделку.</p></div>';return}
+    box.innerHTML='';
+    const labels={escrow:'Эскроу',review:'Проверка',done:'Завершено',dispute:'Спор'};
+    items.forEach((d,i)=>{
+      const row=document.createElement('div');
+      row.className='py-4'+(i>0?' border-t border-slate-100':'');
+      row.innerHTML=`<div class="flex justify-between items-start gap-3 mb-3"><span class="badge ${d.status}"><i class="fa-solid fa-circle text-[8px]"></i>${labels[d.status]||d.status}</span><span class="text-[11px] text-slate-400 font-bold">ID: ${d.id.slice(0,8)}</span></div><button class="w-full text-left" onclick="openDetail('${d.id}')"><p class="font-black text-base truncate">${d.name}</p><p class="text-xs text-slate-500 mt-1">Контрагент: ${d.counterparty}</p></button><div class="flex justify-between items-end mt-4 gap-3"><div><p class="text-lg font-black text-blue-600">${sum(d.price)}</p><p class="text-[11px] text-slate-400 mt-1">${d.deadline}</p></div><div class="flex gap-2"><button onclick="openDetail('${d.id}')" class="ghost text-[11px]">Открыть</button>${d.status!=='done'?`<button onclick="openDispute('${d.id}')" class="ghost text-[11px] text-red-600 bg-red-50">Спор</button>`:''}</div></div>`;
+      box.appendChild(row);
+    });
+  }
+
+  async function setFilter(v){
+    currentFilter=v;
+    ['all','escrow','review','dispute','done'].forEach(x=>{document.getElementById('f-'+x).className='ghost !rounded-full'+(x===v?' bg-white text-blue-600':'')});
+    await loadDeals();
+  }
+
+  async function openDetail(id){
+    const{data:d}=await sb.from('deals').select('*').eq('id',id).single();
+    if(!d)return;
+    const labels={escrow:'Эскроу',review:'Проверка',done:'Завершено',dispute:'Спор'};
+    document.getElementById('detailBody').innerHTML=`<div class="card p-6 mb-5"><div class="flex justify-between items-start gap-3 mb-4"><div><span class="badge ${d.status} mb-3">${labels[d.status]}</span><h3 class="text-2xl font-black">${d.name}</h3></div><div class="text-right"><p class="text-[11px] text-slate-400">ID: ${d.id.slice(0,8)}</p><p class="text-2xl font-black text-blue-600 mt-1">${sum(d.price)}</p></div></div><div class="grid grid-cols-2 gap-3 text-sm"><div class="bg-slate-50 rounded-2xl p-4"><p class="text-slate-400 text-xs mb-1">Контрагент</p><p class="font-black">${d.counterparty}</p></div><div class="bg-slate-50 rounded-2xl p-4"><p class="text-slate-400 text-xs mb-1">Срок</p><p class="font-black">${d.deadline}</p></div></div></div><div class="card p-6 mb-5"><h4 class="font-black mb-3">Условия</h4><p class="text-sm text-slate-600">${d.description||'—'}</p></div><div class="grid grid-cols-2 gap-3"><button onclick="toast('Скопировано')" class="secondary">Поделиться</button>${d.status!=='done'?`<button onclick="openDispute('${d.id}')" class="primary">Открыть спор</button>`:'<button class="secondary">Закрыто</button>'}</div>`;
+    go('detail');
+  }
+
+  async function openDispute(id){
+    const{data}=await sb.from('deals').select('name').eq('id',id).single();
+    if(data)document.getElementById('disputeTitle').textContent=data.name;
+    await sb.from('deals').update({status:'dispute'}).eq('id',id);
+    chatMessages=[{author:'ai',text:'Здравствуйте. Я ИИ-арбитр SENIM. Опишите проблему.'}];
+    renderChat();go('dispute');
+  }
+
+  function pickType(v){
+    currentDealType=v;
+    const map={product:'Параметры товара, сумму и срок проверки.',service:'Услугу, дедлайн и критерии приемки.',rental:'Срок аренды и депозит.',vehicle:'VIN и условия осмотра.'};
+    document.getElementById('typeCaption').textContent=map[v];
+    go('form');
+  }
+
+  function recalc(){const v=parseFloat(document.getElementById('dealPrice').value)||0;const f=Math.round(v*.01);document.getElementById('payBase').textContent=sum(v);document.getElementById('payFee').textContent=sum(f);document.getElementById('payTotal').textContent=sum(v+f)}
+
+  function toPayment(){
+    if(!document.getElementById('dealName').value.trim()||!document.getElementById('dealPrice').value||!document.getElementById('dealParty').value.trim()||!document.getElementById('dealDeadline').value.trim()){toast('Заполните все поля');return}
+    recalc();go('payment');
+  }
+
+  async function createDeal(){
+    if(!currentUser){toast('Сначала войдите');go('login');return}
+    spin(true,'Создаём договор...','Защищаем сделку');
+    const{error}=await sb.from('deals').insert({user_id:currentUser.id,name:document.getElementById('dealName').value.trim(),price:parseFloat(document.getElementById('dealPrice').value),counterparty:document.getElementById('dealParty').value.trim(),deadline:document.getElementById('dealDeadline').value.trim(),description:document.getElementById('dealDesc').value.trim(),deal_type:currentDealType,status:'escrow'});
+    spin(false);
+    if(error){toast('Ошибка: '+error.message);return}
+    ['dealName','dealPrice','dealParty','dealDeadline','dealDesc'].forEach(id=>document.getElementById(id).value='');
+    await loadDeals();toast('Сделка создана и защищена ✓');go('history');
+  }
+
+  function renderChat(){const box=document.getElementById('chat');box.innerHTML='';chatMessages.forEach(m=>{const el=document.createElement('div');el.className='msg '+m.author;el.textContent=m.text;box.appendChild(el)});box.scrollTop=box.scrollHeight}
+
+  function sendMessage(){const input=document.getElementById('msgInput');const v=input.value.trim();if(!v)return;chatMessages.push({author:'user',text:v});input.value='';renderChat();setTimeout(()=>{chatMessages.push({author:'ai',text:'Сообщение получено и добавлено в материалы арбитража.'});renderChat()},500)}
+
+  function prefill(kind){
+    const map={product:{type:'product',name:'PlayStation 5 Digital',price:210000,party:'Нуржан Т.',deadline:'2 дня на проверку',desc:'Товар новый, в заводской упаковке.'},service:{type:'service',name:'Разработка лендинга',price:280000,party:'Apex Studio',deadline:'До 25 июля',desc:'Передача макета и верстки.'}};
+    const t=map[kind];if(!t)return;
+    currentDealType=t.type;
+    document.getElementById('dealName').value=t.name;document.getElementById('dealPrice').value=t.price;document.getElementById('dealParty').value=t.party;document.getElementById('dealDeadline').value=t.deadline;document.getElementById('dealDesc').value=t.desc;
+    recalc();go('form');toast('Шаблон подставлен');
+  }
+
+  async function init(){
+    spin(true,'Загружаем Senim...','');
+    const{data:{session}}=await sb.auth.getSession();
+    if(session?.user){currentUser=session.user;updateUserUI();await loadDeals();spin(false);go('home')}
+    else{spin(false);go('welcome')}
+    sb.auth.onAuthStateChange((_,session)=>{if(session?.user){currentUser=session.user;updateUserUI()}});
+  }
+  init();
+</script>
+</body>
+</html>
