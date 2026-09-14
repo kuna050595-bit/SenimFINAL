@@ -315,7 +315,24 @@
       switchTab('login');return;
     }
     currentUser=data.user||data?.session?.user;
-    updateUserUI();await loadDeals();spin(false);go('home');toast('Добро пожаловать в Senim!');
+    updateUserUI();await loadDeals();spin(false);
+    if(window._pendingInvite){
+      const{dealId,token}=window._pendingInvite;window._pendingInvite=null;
+      await checkPendingInvite2(dealId,token);
+    } else {
+      go('home');
+    }
+    toast('Добро пожаловать в Senim!');
+  }
+
+  async function checkPendingInvite2(dealId,token){
+    spin(true,'Подключаем к сделке...');
+    const{data,error} = await sb.rpc('join_deal', {p_deal_id: dealId, p_token: token});
+    spin(false);
+    if(error){ toast('Не удалось подключиться: '+error.message); go('home'); return; }
+    await loadDeals();
+    toast('Вы подключены к сделке ✓');
+    openDetail(dealId);
   }
 
   async function logout(){await sb.auth.signOut();currentUser=null;go('welcome');toast('Вы вышли из аккаунта')}
@@ -349,6 +366,7 @@
       <button class="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center text-lg" style="background:${meta.bg}" onclick="openDetail('${d.id}')">${thumb}</button>
       <button class="flex-1 min-w-0 text-left" onclick="openDetail('${d.id}')">
         <span class="badge ${d.status}"><i class="fa-solid fa-circle text-[8px]"></i>${STATUS_LABELS[d.status]||d.status}</span>
+        ${currentUser&&d.counterparty_user_id===currentUser.id?'<span class="text-[9px] font-black ml-1 muted">КОНТРАГЕНТ</span>':''}
         <p class="font-black text-[15px] truncate mt-1.5">${d.name}</p>
         <p class="text-xs truncate muted">${d.counterparty} · ${d.deadline}</p>
       </button>
@@ -390,9 +408,33 @@
       ? '<div class="card p-6 mb-5"><h4 class="font-black mb-3">Фото ('+d.photo_urls.length+')</h4><div class="grid grid-cols-3 gap-2">'+d.photo_urls.map(u=>'<img src="'+u+'" class="w-full h-24 object-cover rounded-2xl cursor-pointer" onclick="window.open(\''+u+'\',\'_blank\')">').join('')+'</div></div>'
       : '';
     const contractBlock = d.contract_text ? '<div class="card p-6 mb-5"><h4 class="font-black mb-3">Договор</h4><p class="text-sm muted whitespace-pre-wrap">'+d.contract_text+'</p></div>' : '';
-    document.getElementById('detailBody').innerHTML=`<div class="card p-6 mb-5"><div class="flex justify-between items-start gap-3 mb-4"><div><span class="badge ${d.status} mb-3">${STATUS_LABELS[d.status]}</span><h3 class="text-2xl font-black">${d.name}</h3></div><div class="text-right"><p class="text-[11px] muted">ID: ${d.id.slice(0,8)}</p><p class="text-2xl font-black mt-1" style="color:var(--primary)">${sum(d.price)}</p></div></div><div class="grid grid-cols-2 gap-3 text-sm"><div class="surface p-4"><p class="text-xs mb-1 muted">Контрагент</p><p class="font-black">${d.counterparty}</p></div><div class="surface p-4"><p class="text-xs mb-1 muted">Срок</p><p class="font-black">${d.deadline}</p></div></div></div><div class="card p-6 mb-5"><h4 class="font-black mb-3">Условия</h4><p class="text-sm muted">${d.description||'—'}</p></div>${contractBlock}${photosBlock}<div class="grid grid-cols-2 gap-3"><button onclick="toast('Скопировано')" class="secondary">Поделиться</button>${d.status!=='done'?`<button onclick="openDispute('${d.id}')" class="primary">Открыть спор</button>`:'<button class="secondary">Закрыто</button>'}</div>`;
+    const isCreator = currentUser && d.user_id===currentUser.id;
+    const isCounterparty = currentUser && d.counterparty_user_id===currentUser.id;
+    let inviteBlock = '';
+    if(isCreator && !d.counterparty_user_id){
+      const link = inviteLink(d.id, d.invite_token);
+      inviteBlock = `<div class="card p-6 mb-5" style="background:rgba(139,92,246,.10);border-color:rgba(139,92,246,.35)"><h4 class="font-black mb-2">Пригласите контрагента</h4><p class="text-sm muted mb-4">Пока по ссылке никто не зашёл — контрагент не увидит сделку и не сможет её подтвердить.</p><div class="grid grid-cols-2 gap-3"><button onclick="copyInvite('${d.id}','${d.invite_token}')" class="secondary"><i class="fa-solid fa-link mr-2"></i>Скопировать</button><a href="https://wa.me/?text=${encodeURIComponent('Подтверди сделку в Senim: '+link)}" target="_blank" class="primary" style="text-decoration:none;display:flex;align-items:center;justify-content:center"><i class="fa-brands fa-whatsapp mr-2"></i>WhatsApp</a></div></div>`;
+    } else if(isCounterparty){
+      inviteBlock = `<div class="card p-4 mb-5 flex items-center gap-3" style="background:rgba(34,211,176,.10);border-color:rgba(34,211,176,.35)"><i class="fa-solid fa-circle-check" style="color:var(--teal)"></i><p class="text-sm" style="color:#9BE8DA">Вы подключены к этой сделке как контрагент</p></div>`;
+    }
+    document.getElementById('detailBody').innerHTML=`<div class="card p-6 mb-5"><div class="flex justify-between items-start gap-3 mb-4"><div><span class="badge ${d.status} mb-3">${STATUS_LABELS[d.status]}</span><h3 class="text-2xl font-black">${d.name}</h3></div><div class="text-right"><p class="text-[11px] muted">ID: ${d.id.slice(0,8)}</p><p class="text-2xl font-black mt-1" style="color:var(--primary)">${sum(d.price)}</p></div></div><div class="grid grid-cols-2 gap-3 text-sm"><div class="surface p-4"><p class="text-xs mb-1 muted">Контрагент</p><p class="font-black">${d.counterparty}</p></div><div class="surface p-4"><p class="text-xs mb-1 muted">Срок</p><p class="font-black">${d.deadline}</p></div></div></div>${inviteBlock}<div class="card p-6 mb-5"><h4 class="font-black mb-3">Условия</h4><p class="text-sm muted">${d.description||'—'}</p></div>${contractBlock}${photosBlock}<div class="grid grid-cols-2 gap-3"><button onclick="copyInvite('${d.id}','${d.invite_token}')" class="secondary">Поделиться</button>${d.status!=='done'?`<button onclick="openDispute('${d.id}')" class="primary">Открыть спор</button>`:'<button class="secondary">Закрыто</button>'}</div>`;
     go('detail');
   }
+
+  function inviteLink(dealId, token){
+    return location.origin + location.pathname + '?deal=' + dealId + '&t=' + token;
+  }
+
+  async function copyInvite(dealId, token){
+    const link = inviteLink(dealId, token);
+    try{
+      await navigator.clipboard.writeText(link);
+      toast('Ссылка скопирована — отправьте её контрагенту');
+    }catch(e){
+      toast(link);
+    }
+  }
+
 
   async function openDispute(id){
     const{data}=await sb.from('deals').select('*').eq('id',id).single();
@@ -504,7 +546,8 @@
     resetForm();
     spin(false);
     generatedContract='';
-    await loadDeals();toast('Сделка создана и защищена ✓');go('history');
+    await loadDeals();toast('Сделка создана ✓ Отправьте ссылку контрагенту');
+    openDetail(deal.id);
   }
 
   function renderChat(){const box=document.getElementById('chat');box.innerHTML='';chatMessages.forEach(m=>{const el=document.createElement('div');el.className='msg '+m.author;el.textContent=m.text;box.appendChild(el)});box.scrollTop=box.scrollHeight}
@@ -537,9 +580,28 @@
 
   async function init(){
     spin(true,'Загружаем Senim...','');
+    const params = new URLSearchParams(location.search);
+    const inviteDealId = params.get('deal'), inviteToken = params.get('t');
     const{data:{session}}=await sb.auth.getSession();
-    if(session?.user){currentUser=session.user;updateUserUI();await loadDeals();spin(false);go('home')}
-    else{spin(false);go('welcome')}
+    if(session?.user){
+      currentUser=session.user;updateUserUI();await loadDeals();spin(false);
+      if(inviteDealId && inviteToken){
+        history.replaceState({}, '', location.pathname);
+        await checkPendingInvite2(inviteDealId, inviteToken);
+      } else {
+        go('home');
+      }
+    } else {
+      spin(false);
+      if(inviteDealId && inviteToken){
+        history.replaceState({}, '', location.pathname);
+        window._pendingInvite = {dealId:inviteDealId, token:inviteToken};
+        toast('Войдите или зарегистрируйтесь, чтобы открыть сделку');
+        go('login');
+      } else {
+        go('welcome');
+      }
+    }
     sb.auth.onAuthStateChange((_,session)=>{if(session?.user){currentUser=session.user;updateUserUI()}});
   }
   init();
