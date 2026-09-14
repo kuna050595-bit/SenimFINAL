@@ -2,52 +2,78 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SENIM</title>
+  <meta name="theme-color" content="#141416">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Senim">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
-    body{margin:0;background:linear-gradient(180deg,#edf4ff,#f8fafc);font-family:'Manrope',sans-serif;color:#0f172a}
-    .app{max-width:460px;min-height:100vh;margin:0 auto;background:#fff;box-shadow:0 20px 60px rgba(15,23,42,.12);overflow:hidden}
-    .screen{display:none;min-height:100vh;padding:20px;flex-direction:column}.screen.active{display:flex}
-    .card{background:#fff;border:1px solid #e2e8f0;border-radius:28px;box-shadow:0 14px 30px rgba(15,23,42,.06)}
-    .primary{background:linear-gradient(135deg,#0f62fe,#1d4ed8);color:#fff;border:none;border-radius:18px;padding:16px;font-weight:800;width:100%;cursor:pointer;font-size:15px;font-family:inherit}
-    .primary:disabled{opacity:0.6;cursor:not-allowed}
-    .secondary{background:#fff;color:#0f172a;border:1px solid #e2e8f0;border-radius:18px;padding:15px;font-weight:700;width:100%;cursor:pointer;font-size:15px;font-family:inherit}
-    .ghost{background:#f1f5f9;color:#0f172a;border:none;border-radius:14px;padding:10px 12px;font-weight:700;cursor:pointer;font-family:inherit}
-    .input{width:100%;border:none;outline:none;background:#f1f5f9;border-radius:18px;padding:15px 16px;font:inherit;box-sizing:border-box;font-size:15px}
+    :root{
+      --bg:#141416;
+      --card:#1D1D21;
+      --card-alt:#26262B;
+      --line:#323238;
+      --ink:#F4F3F6;
+      --muted:#8E8C97;
+      --muted2:#5F5D68;
+      --primary:#8B5CF6;
+      --primary-dark:#7C3AED;
+      --teal:#22D3B0;
+    }
+    html,body{overscroll-behavior-y:none}
+    body{margin:0;background:var(--bg);font-family:'Manrope',sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+    .app{max-width:460px;min-height:100vh;margin:0 auto;background:var(--bg);box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden}
+    .screen{display:none;min-height:100vh;padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-direction:column}.screen.active{display:flex}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+    .primary{background:var(--primary);color:#fff;border:none;border-radius:18px;padding:16px;font-weight:800;width:100%;cursor:pointer;font-size:15px;font-family:inherit;box-shadow:0 10px 24px rgba(139,92,246,.35)}
+    .primary:disabled{opacity:0.5;cursor:not-allowed;box-shadow:none}
+    .secondary{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:15px;font-weight:700;width:100%;cursor:pointer;font-size:15px;font-family:inherit}
+    .ghost{background:var(--card-alt);color:var(--ink);border:none;border-radius:14px;padding:10px 12px;font-weight:700;cursor:pointer;font-family:inherit}
+    .input{width:100%;border:none;outline:none;background:var(--card-alt);border-radius:18px;padding:15px 16px;font:inherit;box-sizing:border-box;font-size:15px;color:var(--ink)}
+    .input::placeholder{color:var(--muted)}
     .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase}
-    .escrow{background:#dbeafe;color:#1d4ed8}.review{background:#fef3c7;color:#b45309}.done{background:#dcfce7;color:#15803d}.dispute{background:#fee2e2;color:#b91c1c}
-    .tabbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 20px;background:#fff;border-top:1px solid #e2e8f0;margin:auto -20px -20px}
-    .tab{font-size:11px;text-align:center;color:#94a3b8;font-weight:700;cursor:pointer}.tab.active{color:#0f62fe}.tab i{font-size:18px;display:block;margin-bottom:6px}
-    .msg{max-width:82%;padding:12px 14px;border-radius:18px;font-size:13px;line-height:1.45}.msg.ai{background:#f1f5f9;align-self:flex-start}.msg.user{background:#0f62fe;color:#fff;align-self:flex-end}
+    .escrow{background:rgba(34,211,176,.16);color:#5EEAD4}.review{background:rgba(251,191,36,.16);color:#FBBF24}.done{background:rgba(74,222,128,.16);color:#4ADE80}.dispute{background:rgba(248,113,113,.18);color:#F87171}
+    .tabbar{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;align-items:center;padding:10px 10px calc(18px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line);margin:auto -20px calc(-20px - env(safe-area-inset-bottom))}
+    .tab{font-size:10px;text-align:center;color:var(--muted);font-weight:700;cursor:pointer}.tab.active{color:var(--primary)}.tab i{font-size:17px;display:block;margin-bottom:5px}
+    .tab-fab{width:50px;height:50px;border-radius:16px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;margin:-28px auto 6px;box-shadow:0 10px 24px rgba(139,92,246,.45);cursor:pointer}
+    .msg{max-width:82%;padding:12px 14px;border-radius:18px;font-size:13px;line-height:1.45}.msg.ai{background:var(--card-alt);align-self:flex-start}.msg.user{background:var(--primary);color:#fff;align-self:flex-end}
     .noscroll{overflow:auto;scrollbar-width:none}.noscroll::-webkit-scrollbar{display:none}
-    .otp-input{width:52px;height:56px;background:#f1f5f9;border:2px solid transparent;border-radius:14px;text-align:center;font-weight:800;font-size:22px;font-family:inherit;outline:none;transition:.2s}
-    .otp-input:focus{border-color:#0f62fe;background:#eff6ff}
-    .err{color:#ef4444;font-size:13px;font-weight:700;text-align:center;margin-top:8px;min-height:20px}
-    .tabs-auth{display:flex;gap:4px;background:#f1f5f9;border-radius:16px;padding:4px;margin-bottom:24px}
-    .tab-auth{flex:1;padding:10px;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;background:transparent;color:#94a3b8;font-family:inherit}
-    .tab-auth.active{background:#fff;color:#0f62fe;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+    .err{color:#F87171;font-size:13px;font-weight:700;text-align:center;margin-top:8px;min-height:20px}
+    .tabs-auth{display:flex;gap:4px;background:var(--card-alt);border-radius:16px;padding:4px;margin-bottom:24px}
+    .tab-auth{flex:1;padding:10px;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;background:transparent;color:var(--muted);font-family:inherit}
+    .tab-auth.active{background:var(--card);color:var(--primary);box-shadow:0 2px 10px rgba(139,92,246,.25)}
+    .type-chip{flex-shrink:0;padding:10px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px}
+    .type-chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
+    .iconbtn{width:44px;height:44px;border-radius:16px;background:var(--card-alt);color:var(--ink);display:flex;align-items:center;justify-content:center;border:1px solid var(--line);flex-shrink:0}
+    .surface{background:var(--card-alt);border-radius:16px}
+    .muted{color:var(--muted)}
   </style>
 </head>
 <body>
 <div class="app">
 
   <section id="welcome" class="screen active justify-center text-center">
-    <div class="w-28 h-28 rounded-[34px] mx-auto mb-8 flex items-center justify-center shadow-2xl bg-[linear-gradient(135deg,#0f62fe,#14b8a6)]">
+    <div class="w-28 h-28 rounded-[34px] mx-auto mb-8 flex items-center justify-center shadow-2xl bg-[linear-gradient(135deg,#8B5CF6,#22D3B0)]">
       <i class="fa-solid fa-shield-halved text-white text-5xl"></i>
     </div>
-    <p class="text-xs font-black uppercase tracking-[0.35em] text-blue-600 mb-3">Senim</p>
+    <p class="text-xs font-black uppercase tracking-[0.35em] mb-3" style="color:var(--primary)">Senim</p>
     <h1 class="text-4xl font-black leading-tight mb-4">Безопасные сделки для товаров и услуг</h1>
-    <p class="text-slate-500 leading-relaxed px-6 mb-10">Эскроу, договоры, подтверждения и арбитраж.</p>
+    <p class="leading-relaxed px-6 mb-10 muted">Эскроу, договоры, подтверждения и арбитраж.</p>
     <button class="primary" onclick="go('login')">Войти / Зарегистрироваться</button>
   </section>
 
   <section id="login" class="screen justify-center">
-    <button class="w-11 h-11 rounded-2xl bg-slate-50 mb-8 self-start" onclick="go('welcome')"><i class="fa-solid fa-arrow-left"></i></button>
-    <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mb-6"><i class="fa-solid fa-shield-halved"></i></div>
+    <button class="iconbtn mb-8 self-start" onclick="go('welcome')"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-6" style="background:rgba(139,92,246,.16);color:var(--primary)"><i class="fa-solid fa-shield-halved"></i></div>
     <h2 class="text-3xl font-black mb-6">Добро пожаловать</h2>
     <div class="tabs-auth">
       <button class="tab-auth active" id="tabLogin" onclick="switchTab('login')">Войти</button>
@@ -63,33 +89,40 @@
 
 
   <section id="home" class="screen">
-    <div class="flex items-start justify-between mb-6">
+    <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-3">
-        <img id="userAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-14 h-14 rounded-[18px] bg-slate-100" alt="Avatar">
+        <img id="userAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-12 h-12 rounded-2xl" style="background:var(--card-alt)" alt="Avatar">
         <div>
-          <h2 id="userName" class="text-lg font-black">...</h2>
-          <p class="text-xs text-slate-500">Покупатель и продавец</p>
-          <div class="text-[11px] text-amber-500 font-bold mt-1"><i class="fa-solid fa-star"></i> 5.0</div>
+          <p class="text-[11px] font-bold muted">С возвращением</p>
+          <h2 id="userName" class="text-lg font-black leading-tight">...</h2>
         </div>
       </div>
-      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('notifications')"><i class="fa-solid fa-bell text-slate-500"></i></button>
+      <button class="iconbtn" onclick="go('notifications')"><i class="fa-solid fa-bell muted"></i></button>
     </div>
-    <div class="card p-6 mb-6 text-white bg-[linear-gradient(145deg,#0f172a,#172554)]">
-      <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-2">Эскроу баланс</p>
-      <h3 id="balance" class="text-3xl font-black mb-4">0 ₸</h3>
-      <div class="grid grid-cols-2 gap-3">
-        <button class="ghost text-white bg-white/10" onclick="go('protection')">Как работает</button>
-        <button class="ghost text-white bg-white/10" onclick="loadDeals();go('history')">Мои сделки</button>
+
+    <button class="primary flex items-center justify-center gap-2 mb-5" onclick="newDeal()"><i class="fa-solid fa-plus"></i>Новая защищённая сделка</button>
+
+    <div class="grid grid-cols-2 gap-3 mb-6">
+      <div class="card p-4">
+        <p class="text-[10px] font-black uppercase tracking-wide mb-1 muted">Активных сделок</p>
+        <h3 id="balance" class="text-xl font-black">0 ₸</h3>
       </div>
+      <button class="card p-4 text-left" onclick="go('protection')">
+        <p class="text-[10px] font-black uppercase tracking-wide mb-1 muted">Как это работает</p>
+        <h3 class="text-[13px] font-black leading-tight" style="color:var(--primary)">Договор · Банк · Арбитраж</h3>
+      </button>
     </div>
-    <div class="grid grid-cols-2 gap-4 mb-6">
-      <button onclick="go('type')" class="card p-5 text-left"><div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-plus"></i></div><p class="font-black">Новая сделка</p><p class="text-xs text-slate-500 mt-1">Договор и холдирование</p></button>
-      <button onclick="go('actions')" class="card p-5 text-left"><div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-bolt"></i></div><p class="font-black">Шаблоны</p><p class="text-xs text-slate-500 mt-1">Быстрое создание</p></button>
+
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-black">Ваши сделки</h3>
+      <button class="text-xs font-black" style="color:var(--primary)" onclick="loadDeals();go('history')">Все сделки →</button>
     </div>
-    <div id="events" class="card px-5 flex-1 noscroll"><div class="py-8 text-center text-slate-400 text-sm">События появятся здесь</div></div>
+    <div id="homeDeals" class="flex-1 noscroll flex flex-col gap-3"></div>
+
     <div class="tabbar">
       <div class="tab active" onclick="go('home')"><i class="fa-solid fa-house"></i>Главная</div>
       <div class="tab" onclick="loadDeals();go('history')"><i class="fa-solid fa-briefcase"></i>Сделки</div>
+      <div class="tab-fab" onclick="newDeal()"><i class="fa-solid fa-plus"></i></div>
       <div class="tab" onclick="go('protection')"><i class="fa-solid fa-shield"></i>Защита</div>
       <div class="tab" onclick="go('settings')"><i class="fa-solid fa-gear"></i>Профиль</div>
     </div>
@@ -97,133 +130,137 @@
 
   <section id="history" class="screen">
     <div class="flex items-center justify-between mb-6">
-      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button>
+      <button class="iconbtn" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button>
       <h2 class="text-xl font-black">Ваши сделки</h2>
-      <button class="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600" onclick="go('type')"><i class="fa-solid fa-plus"></i></button>
+      <button class="iconbtn" style="color:var(--primary)" onclick="newDeal()"><i class="fa-solid fa-plus"></i></button>
     </div>
-    <div class="flex gap-2 mb-5 overflow-auto noscroll bg-slate-100 p-1.5 rounded-full">
-      <button id="f-all" class="ghost !rounded-full bg-white text-blue-600" onclick="setFilter('all')">Все</button>
+    <div class="flex gap-2 mb-5 overflow-auto noscroll p-1.5 rounded-full surface">
+      <button id="f-all" class="ghost !rounded-full" style="background:rgba(139,92,246,.16);color:var(--primary)" onclick="setFilter('all')">Все</button>
       <button id="f-escrow" class="ghost !rounded-full" onclick="setFilter('escrow')">Эскроу</button>
       <button id="f-review" class="ghost !rounded-full" onclick="setFilter('review')">Проверка</button>
       <button id="f-dispute" class="ghost !rounded-full" onclick="setFilter('dispute')">Спор</button>
       <button id="f-done" class="ghost !rounded-full" onclick="setFilter('done')">Завершено</button>
     </div>
-    <div id="deals" class="card px-5 flex-1 noscroll"></div>
+    <div id="deals" class="flex-1 noscroll flex flex-col gap-3"></div>
   </section>
 
   <section id="detail" class="screen">
     <div class="flex items-center justify-between mb-6">
-      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('history')"><i class="fa-solid fa-arrow-left"></i></button>
+      <button class="iconbtn" onclick="go('history')"><i class="fa-solid fa-arrow-left"></i></button>
       <h2 class="text-xl font-black">Детали сделки</h2>
-      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="toast('Ссылка скопирована')"><i class="fa-solid fa-share-nodes"></i></button>
+      <button class="iconbtn" onclick="toast('Ссылка скопирована')"><i class="fa-solid fa-share-nodes"></i></button>
     </div>
     <div id="detailBody" class="flex-1 noscroll"></div>
   </section>
 
   <section id="dispute" class="screen">
     <div class="flex items-center justify-between mb-5">
-      <button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('history')"><i class="fa-solid fa-arrow-left"></i></button>
-      <div class="text-center"><h2 id="disputeTitle" class="text-lg font-black">Арбитраж</h2><p class="text-[11px] uppercase tracking-[0.22em] text-red-500 font-black">В рассмотрении</p></div>
-      <div class="w-11 h-11 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center"><i class="fa-solid fa-gavel"></i></div>
+      <button class="iconbtn" onclick="go('history')"><i class="fa-solid fa-arrow-left"></i></button>
+      <div class="text-center"><h2 id="disputeTitle" class="text-lg font-black">Арбитраж</h2><p class="text-[11px] uppercase tracking-[0.22em] font-black" style="color:#F87171">В рассмотрении</p></div>
+      <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background:rgba(248,113,113,.16);color:#F87171"><i class="fa-solid fa-gavel"></i></div>
     </div>
-    <div id="chat" class="card p-4 flex-1 flex flex-col gap-2 noscroll bg-slate-50 mb-4"></div>
+    <div id="chat" class="card p-4 flex-1 flex flex-col gap-2 noscroll mb-4" style="background:var(--card-alt)"></div>
     <div class="flex gap-2">
       <input id="msgInput" class="input flex-1 !py-3 !px-4" placeholder="Ваше сообщение...">
-      <button class="w-12 h-12 rounded-2xl bg-blue-600 text-white" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
-  </section>
-
-  <section id="type" class="screen">
-    <button class="w-11 h-11 rounded-2xl bg-slate-50 mb-4" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button>
-    <h2 class="text-3xl font-black mb-2">Создать сделку</h2>
-    <p class="text-slate-500 text-sm mb-8">Выберите тип сценария.</p>
-    <div class="grid grid-cols-2 gap-4">
-      <button onclick="pickType('product')" class="card p-6 text-center"><div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-mobile-screen-button text-xl"></i></div><p class="font-black">Товар</p><p class="text-xs text-slate-500 mt-1">Электроника и вещи</p></button>
-      <button onclick="pickType('service')" class="card p-6 text-center"><div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-code text-xl"></i></div><p class="font-black">Услуга</p><p class="text-xs text-slate-500 mt-1">Разработка и подряд</p></button>
-      <button onclick="pickType('rental')" class="card p-6 text-center"><div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-key text-xl"></i></div><p class="font-black">Аренда</p><p class="text-xs text-slate-500 mt-1">Жилье и техника</p></button>
-      <button onclick="pickType('vehicle')" class="card p-6 text-center"><div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-car-side text-xl"></i></div><p class="font-black">Авто</p><p class="text-xs text-slate-500 mt-1">Осмотр и передача</p></button>
+      <button class="w-12 h-12 rounded-2xl text-white flex items-center justify-center flex-shrink-0" style="background:var(--primary)" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
   </section>
 
   <section id="form" class="screen">
-    <button class="w-11 h-11 rounded-2xl bg-slate-50 mb-4" onclick="go('type')"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="iconbtn mb-4" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button>
     <div class="flex-1 noscroll pb-4">
-      <h2 class="text-2xl font-black mb-2">Параметры сделки</h2>
-      <p id="typeCaption" class="text-sm text-slate-500 mb-6">Заполните ключевые условия.</p>
+      <h2 class="text-2xl font-black mb-1">Новая сделка</h2>
+      <p id="typeHint" class="text-sm mb-5 muted">Электроника и вещи — укажите модель и состояние.</p>
+
+      <label class="text-[11px] uppercase tracking-[0.22em] font-black mb-2 block ml-1 muted">Тип сделки</label>
+      <div class="flex gap-2 overflow-auto noscroll mb-5 pb-1">
+        <button class="type-chip active" data-type="product" onclick="setDealType('product')"><i class="fa-solid fa-mobile-screen-button"></i>Товар</button>
+        <button class="type-chip" data-type="service" onclick="setDealType('service')"><i class="fa-solid fa-code"></i>Услуга</button>
+        <button class="type-chip" data-type="rental" onclick="setDealType('rental')"><i class="fa-solid fa-key"></i>Аренда</button>
+        <button class="type-chip" data-type="vehicle" onclick="setDealType('vehicle')"><i class="fa-solid fa-car-side"></i>Авто</button>
+      </div>
+
+      <label class="text-[11px] uppercase tracking-[0.22em] font-black mb-2 block ml-1 muted">Фото товара / доказательства</label>
+      <div id="photoArea" class="rounded-2xl p-5 text-center cursor-pointer border-2 border-dashed mb-2 surface" style="border-color:var(--line)" onclick="document.getElementById('photoInput').click()">
+        <i class="fa-solid fa-camera text-2xl mb-2 block muted"></i>
+        <p class="text-sm font-bold muted">Нажмите чтобы добавить фото</p>
+        <p class="text-xs mt-1" style="color:var(--muted2)">Начните с фото — как в объявлении</p>
+      </div>
+      <input id="photoInput" type="file" accept="image/*" multiple class="hidden" onchange="previewPhotos(this)">
+      <div id="photoPreview" class="grid grid-cols-3 gap-2 mb-5"></div>
+
       <div class="space-y-4">
-        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Название сделки</label><input id="dealName" class="input" placeholder="Например: iPhone 15 Pro"></div>
-        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Сумма, ₸</label><input id="dealPrice" type="number" class="input" placeholder="Введите стоимость" oninput="recalc()"></div>
-        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Контрагент</label><input id="dealParty" class="input" placeholder="Имя продавца или исполнителя"></div>
-        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Срок исполнения</label><input id="dealDeadline" class="input" placeholder="Например: 3 дня / до 25 июля"></div>
-        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Условия</label><textarea id="dealDesc" rows="4" class="input" placeholder="Опишите условия возврата и приемки"></textarea></div>
-        <div>
-          <label class="text-[11px] uppercase tracking-[0.22em] font-black text-slate-400 mb-2 block ml-2">Фото товара / доказательства</label>
-          <div id="photoArea" class="bg-slate-50 rounded-2xl p-4 text-center cursor-pointer border-2 border-dashed border-slate-200" onclick="document.getElementById('photoInput').click()">
-            <i class="fa-solid fa-camera text-slate-400 text-2xl mb-2 block"></i>
-            <p class="text-sm text-slate-400 font-bold">Нажмите чтобы добавить фото</p>
-            <p class="text-xs text-slate-400 mt-1">JPG, PNG до 5MB</p>
-          </div>
-          <input id="photoInput" type="file" accept="image/*" multiple class="hidden" onchange="previewPhotos(this)">
-          <div id="photoPreview" class="grid grid-cols-3 gap-2 mt-3"></div>
-        </div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black mb-2 block ml-2 muted">Название сделки</label><input id="dealName" class="input" placeholder="Например: iPhone 15 Pro"></div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black mb-2 block ml-2 muted">Сумма, ₸</label><input id="dealPrice" type="number" class="input" placeholder="Введите стоимость" oninput="recalc()"></div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black mb-2 block ml-2 muted">Контрагент</label><input id="dealParty" class="input" placeholder="Имя продавца или исполнителя"></div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black mb-2 block ml-2 muted">Срок исполнения</label><input id="dealDeadline" class="input" placeholder="Например: 3 дня / до 25 июля"></div>
+        <div><label class="text-[11px] uppercase tracking-[0.22em] font-black mb-2 block ml-2 muted">Условия</label><textarea id="dealDesc" rows="4" class="input" placeholder="Опишите условия возврата и приемки"></textarea></div>
       </div>
     </div>
-    <button class="primary" onclick="toPayment()">Перейти к холдированию</button>
+    <button class="primary" id="toContractBtn" onclick="toPayment()">Сформировать договор</button>
+  </section>
+
+  <section id="contract" class="screen">
+    <button class="iconbtn mb-4" onclick="go('form')"><i class="fa-solid fa-arrow-left"></i></button>
+    <h2 class="text-2xl font-black mb-2">Договор сделки</h2>
+    <p class="text-sm mb-5 muted">Сформирован ИИ на основе условий. Проверьте перед продолжением.</p>
+    <div id="contractText" class="card p-5 mb-6 flex-1 noscroll text-sm leading-relaxed whitespace-pre-wrap"></div>
+    <button class="primary" onclick="recalc();go('payment')">Всё верно, продолжить</button>
   </section>
 
   <section id="payment" class="screen">
-    <button class="w-11 h-11 rounded-2xl bg-slate-50 mb-4" onclick="go('form')"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="iconbtn mb-4" onclick="go('contract')"><i class="fa-solid fa-arrow-left"></i></button>
     <h2 class="text-2xl font-black mb-5">Безопасная оплата</h2>
-    <div class="card p-5 mb-6 bg-blue-50 border-blue-100">
-      <div class="flex gap-4"><div class="w-12 h-12 bg-blue-600 rounded-2xl text-white flex items-center justify-center"><i class="fa-solid fa-lock"></i></div><div><p class="font-black text-blue-950">Эскроу-защита активна</p><p class="text-sm text-blue-700 mt-1">Средства блокируются до приемки.</p></div></div>
+    <div class="card p-5 mb-6" style="background:rgba(34,211,176,.10);border-color:rgba(34,211,176,.35)">
+      <div class="flex gap-4"><div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center flex-shrink-0" style="background:var(--teal)"><i class="fa-solid fa-lock"></i></div><div><p class="font-black" style="color:#5EEAD4">Эскроу-защита</p><p class="text-sm mt-1" style="color:#9BE8DA">Договор зафиксирован. Приём и холдирование средств — через банка-партнёра (интеграция в процессе), сделка и статусы уже отслеживаются в Senim.</p></div></div>
     </div>
     <div class="card p-6 space-y-3 mb-6">
-      <div class="flex justify-between text-sm text-slate-500"><span>Сумма сделки</span><span id="payBase" class="font-black text-slate-900">0 ₸</span></div>
-      <div class="flex justify-between text-sm text-slate-500"><span>Комиссия SENIM (1%)</span><span id="payFee" class="font-black text-slate-900">0 ₸</span></div>
-      <div class="flex justify-between items-center pt-4 border-t border-slate-100"><span class="text-xl font-black">К списанию</span><span id="payTotal" class="text-2xl font-black text-blue-600">0 ₸</span></div>
+      <div class="flex justify-between text-sm muted"><span>Сумма сделки</span><span id="payBase" class="font-black" style="color:var(--ink)">0 ₸</span></div>
+      <div class="flex justify-between text-sm muted"><span>Комиссия SENIM (1%)</span><span id="payFee" class="font-black" style="color:var(--ink)">0 ₸</span></div>
+      <div class="flex justify-between items-center pt-4 border-t" style="border-color:var(--line)"><span class="text-xl font-black">К списанию</span><span id="payTotal" class="text-2xl font-black" style="color:var(--primary)">0 ₸</span></div>
     </div>
     <button class="primary" onclick="createDeal()">Создать защищённую сделку</button>
   </section>
 
   <section id="protection" class="screen">
-    <div class="flex items-center justify-between mb-6"><button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Как работает защита</h2><div class="w-11"></div></div>
+    <div class="flex items-center justify-between mb-6"><button class="iconbtn" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Как работает защита</h2><div class="w-11"></div></div>
     <div class="space-y-4 flex-1">
-      <div class="card p-5"><div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-file-signature"></i></div><h3 class="font-black mb-2">1. Цифровой договор</h3><p class="text-sm text-slate-500">Стороны фиксируют предмет, сумму и сроки.</p></div>
-      <div class="card p-5"><div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-money-bill-transfer"></i></div><h3 class="font-black mb-2">2. Холдирование</h3><p class="text-sm text-slate-500">Деньги блокируются до приемки результата.</p></div>
-      <div class="card p-5"><div class="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid fa-scale-balanced"></i></div><h3 class="font-black mb-2">3. Арбитраж</h3><p class="text-sm text-slate-500">ИИ-арбитр помогает разрешить спор.</p></div>
+      <div class="card p-5"><div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,.16);color:var(--primary)"><i class="fa-solid fa-file-signature"></i></div><h3 class="font-black mb-2">1. Цифровой договор</h3><p class="text-sm muted">ИИ составляет договор на основе условий, стороны фиксируют предмет, сумму и сроки.</p></div>
+      <div class="card p-5"><div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(34,211,176,.16);color:var(--teal)"><i class="fa-solid fa-money-bill-transfer"></i></div><h3 class="font-black mb-2">2. Холдирование через банк</h3><p class="text-sm muted">Деньги удерживаются на счёте банка-партнёра до подтверждения приёмки — Senim не хранит средства сам.</p></div>
+      <div class="card p-5"><div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(248,113,113,.16);color:#F87171"><i class="fa-solid fa-scale-balanced"></i></div><h3 class="font-black mb-2">3. Арбитраж</h3><p class="text-sm muted">ИИ-арбитр помогает разрешить спор.</p></div>
     </div>
   </section>
 
   <section id="notifications" class="screen">
-    <div class="flex items-center justify-between mb-6"><button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Уведомления</h2><div class="w-11"></div></div>
-    <div class="card px-5 flex-1"><div class="py-8 text-center text-slate-400 text-sm">Уведомлений пока нет</div></div>
+    <div class="flex items-center justify-between mb-6"><button class="iconbtn" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Уведомления</h2><div class="w-11"></div></div>
+    <div class="card px-5 flex-1"><div class="py-8 text-center text-sm muted">Уведомлений пока нет</div></div>
   </section>
 
   <section id="actions" class="screen">
-    <div class="flex items-center justify-between mb-6"><button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Шаблоны</h2><div class="w-11"></div></div>
+    <div class="flex items-center justify-between mb-6"><button class="iconbtn" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Шаблоны</h2><div class="w-11"></div></div>
     <div class="card px-5">
-      <button class="w-full flex items-center gap-4 py-4 text-left" onclick="prefill('product')"><div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center"><i class="fa-solid fa-box-open"></i></div><div class="flex-1"><p class="font-black">Продажа товара</p><p class="text-xs text-slate-500 mt-1">Для техники и вещей</p></div><i class="fa-solid fa-chevron-right text-slate-300"></i></button>
-      <button class="w-full flex items-center gap-4 py-4 text-left border-t border-slate-100" onclick="prefill('service')"><div class="w-12 h-12 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center"><i class="fa-solid fa-laptop-code"></i></div><div class="flex-1"><p class="font-black">Digital-услуга</p><p class="text-xs text-slate-500 mt-1">Для дизайна и разработки</p></div><i class="fa-solid fa-chevron-right text-slate-300"></i></button>
+      <button class="w-full flex items-center gap-4 py-4 text-left" onclick="prefill('product')"><div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(96,165,250,.16);color:#60A5FA"><i class="fa-solid fa-box-open"></i></div><div class="flex-1"><p class="font-black">Продажа товара</p><p class="text-xs mt-1 muted">Для техники и вещей</p></div><i class="fa-solid fa-chevron-right muted"></i></button>
+      <button class="w-full flex items-center gap-4 py-4 text-left border-t" style="border-color:var(--line)" onclick="prefill('service')"><div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(244,114,182,.16);color:#F472B6"><i class="fa-solid fa-laptop-code"></i></div><div class="flex-1"><p class="font-black">Digital-услуга</p><p class="text-xs mt-1 muted">Для дизайна и разработки</p></div><i class="fa-solid fa-chevron-right muted"></i></button>
     </div>
   </section>
 
   <section id="settings" class="screen">
-    <div class="flex items-center justify-between mb-6"><button class="w-11 h-11 rounded-2xl bg-slate-50" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Профиль</h2><div class="w-11"></div></div>
+    <div class="flex items-center justify-between mb-6"><button class="iconbtn" onclick="go('home')"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-black">Профиль</h2><div class="w-11"></div></div>
     <div class="card p-5 mb-5">
       <div class="flex items-center gap-4">
-        <img id="settingsAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-16 h-16 rounded-[20px] bg-slate-100" alt="Avatar">
-        <div><p id="settingsName" class="font-black text-lg">...</p><p id="settingsEmail" class="text-sm text-slate-500"></p><div class="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-black"><i class="fa-solid fa-circle-check"></i> Верифицирован</div></div>
+        <img id="settingsAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="w-16 h-16 rounded-[20px]" style="background:var(--card-alt)" alt="Avatar">
+        <div><p id="settingsName" class="font-black text-lg">...</p><p id="settingsEmail" class="text-sm muted"></p><div class="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black" style="background:rgba(74,222,128,.16);color:#4ADE80"><i class="fa-solid fa-circle-check"></i> Верифицирован</div></div>
       </div>
     </div>
-    <button class="secondary text-red-500 border-red-100" onclick="logout()"><i class="fa-solid fa-right-from-bracket mr-2"></i>Выйти</button>
+    <button class="secondary" style="color:#F87171;border-color:rgba(248,113,113,.3)" onclick="logout()"><i class="fa-solid fa-right-from-bracket mr-2"></i>Выйти</button>
   </section>
 
 </div>
 
-<div id="loader" class="fixed inset-0 bg-slate-950/85 hidden items-center justify-center z-50 p-10">
-  <div class="text-center"><div class="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div><h3 id="loaderTitle" class="text-white font-black text-xl mb-2">Загрузка...</h3><p id="loaderDesc" class="text-slate-400 text-sm"></p></div>
+<div id="loader" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-10">
+  <div class="text-center"><div class="w-20 h-20 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-6" style="border-color:var(--primary) transparent transparent transparent"></div><h3 id="loaderTitle" class="text-white font-black text-xl mb-2">Загрузка...</h3><p id="loaderDesc" class="text-sm" style="color:var(--muted)"></p></div>
 </div>
-<div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-sm font-bold px-4 py-3 rounded-2xl shadow-2xl whitespace-nowrap"></div>
+<div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-sm font-bold px-4 py-3 rounded-2xl shadow-2xl whitespace-nowrap" style="background:var(--card-alt);color:var(--ink);border:1px solid var(--line)"></div>
 
 <script>
   const SUPABASE_URL = 'https://voybxauaytyjzzhtibfz.supabase.co';
@@ -231,6 +268,17 @@
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let currentUser = null, currentEmail = '', currentDealType = 'product', currentFilter = 'all', chatMessages = [];
+  let generatedContract = '', currentDisputeDeal = null, pendingPhotos = [];
+
+  const TYPE_META = {
+    product:{icon:'fa-mobile-screen-button',bg:'rgba(96,165,250,.16)',fg:'#60A5FA',hint:'Электроника и вещи — укажите модель и состояние.'},
+    service:{icon:'fa-code',bg:'rgba(244,114,182,.16)',fg:'#F472B6',hint:'Разработка, дизайн, подряд — опишите результат и дедлайн.'},
+    rental:{icon:'fa-key',bg:'rgba(52,211,153,.16)',fg:'#34D399',hint:'Жильё, техника — укажите срок и условия депозита.'},
+    vehicle:{icon:'fa-car-side',bg:'rgba(251,191,36,.16)',fg:'#FBBF24',hint:'Авто — укажите VIN и условия осмотра.'}
+  };
+  const STATUS_LABELS = {escrow:'Эскроу',review:'Проверка',done:'Завершено',dispute:'Спор'};
+  const PHOTO_PLACEHOLDER = '<i class="fa-solid fa-camera text-2xl mb-2 block muted"></i><p class="text-sm font-bold muted">Нажмите чтобы добавить фото</p><p class="text-xs mt-1" style="color:var(--muted2)">Начните с фото — как в объявлении</p>';
+  const EMPTY_DEALS_HTML = '<div class="card py-12 text-center"><div class="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4" style="background:rgba(139,92,246,.14);color:var(--primary)"><i class="fa-solid fa-folder-open text-2xl"></i></div><p class="font-black mb-1">Сделок пока нет</p><p class="text-sm muted">Создайте первую защищённую сделку.</p></div>';
 
   function go(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
   function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.add('hidden'),2500)}
@@ -288,64 +336,117 @@
     if(!currentUser)return;
     const{data}=await sb.from('deals').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
     renderDeals(data||[]);
+    renderHomeDeals(data||[]);
     const total=(data||[]).filter(d=>['escrow','review','dispute'].includes(d.status)).reduce((a,b)=>a+Number(b.price||0),0);
     document.getElementById('balance').textContent=sum(total);
+  }
+
+  function dealCardHTML(d){
+    const meta=TYPE_META[d.deal_type]||TYPE_META.product;
+    const photo=(d.photo_urls&&d.photo_urls[0])?d.photo_urls[0]:'';
+    const thumb=photo?`<img src="${photo}" class="w-full h-full object-cover">`:`<i class="fa-solid ${meta.icon}" style="color:${meta.fg}"></i>`;
+    return `<div class="card p-3 flex items-center gap-3">
+      <button class="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center text-lg" style="background:${meta.bg}" onclick="openDetail('${d.id}')">${thumb}</button>
+      <button class="flex-1 min-w-0 text-left" onclick="openDetail('${d.id}')">
+        <span class="badge ${d.status}"><i class="fa-solid fa-circle text-[8px]"></i>${STATUS_LABELS[d.status]||d.status}</span>
+        <p class="font-black text-[15px] truncate mt-1.5">${d.name}</p>
+        <p class="text-xs truncate muted">${d.counterparty} · ${d.deadline}</p>
+      </button>
+      <div class="text-right flex-shrink-0">
+        <p class="font-black text-[15px]" style="color:var(--primary)">${sum(d.price)}</p>
+        ${d.status!=='done'?`<button onclick="openDispute('${d.id}')" class="text-[10px] font-black mt-1.5" style="color:#F87171">Спор</button>`:''}
+      </div>
+    </div>`;
   }
 
   function renderDeals(deals){
     const box=document.getElementById('deals');
     const items=currentFilter==='all'?deals:deals.filter(d=>d.status===currentFilter);
-    if(!items.length){box.innerHTML='<div class="py-12 text-center"><div class="w-16 h-16 rounded-3xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-folder-open text-2xl"></i></div><p class="font-black mb-1">Сделок пока нет</p><p class="text-sm text-slate-500">Создайте первую защищённую сделку.</p></div>';return}
-    box.innerHTML='';
-    const labels={escrow:'Эскроу',review:'Проверка',done:'Завершено',dispute:'Спор'};
-    items.forEach((d,i)=>{
-      const row=document.createElement('div');
-      row.className='py-4'+(i>0?' border-t border-slate-100':'');
-      row.innerHTML=`<div class="flex justify-between items-start gap-3 mb-3"><span class="badge ${d.status}"><i class="fa-solid fa-circle text-[8px]"></i>${labels[d.status]||d.status}</span><span class="text-[11px] text-slate-400 font-bold">ID: ${d.id.slice(0,8)}</span></div><button class="w-full text-left" onclick="openDetail('${d.id}')"><p class="font-black text-base truncate">${d.name}</p><p class="text-xs text-slate-500 mt-1">Контрагент: ${d.counterparty}</p></button><div class="flex justify-between items-end mt-4 gap-3"><div><p class="text-lg font-black text-blue-600">${sum(d.price)}</p><p class="text-[11px] text-slate-400 mt-1">${d.deadline}</p></div><div class="flex gap-2"><button onclick="openDetail('${d.id}')" class="ghost text-[11px]">Открыть</button>${d.status!=='done'?`<button onclick="openDispute('${d.id}')" class="ghost text-[11px] text-red-600 bg-red-50">Спор</button>`:''}</div></div>`;
-      box.appendChild(row);
-    });
+    box.innerHTML = items.length ? items.map(dealCardHTML).join('') : EMPTY_DEALS_HTML;
+  }
+
+  function renderHomeDeals(deals){
+    const box=document.getElementById('homeDeals');
+    if(!box)return;
+    if(!deals.length){box.innerHTML='<div class="card p-6 text-center"><p class="font-black mb-1">Пока пусто</p><p class="text-sm muted">Создайте первую защищённую сделку — она появится здесь.</p></div>';return}
+    box.innerHTML=deals.slice(0,3).map(dealCardHTML).join('');
   }
 
   async function setFilter(v){
     currentFilter=v;
-    ['all','escrow','review','dispute','done'].forEach(x=>{document.getElementById('f-'+x).className='ghost !rounded-full'+(x===v?' bg-white text-blue-600':'')});
+    ['all','escrow','review','dispute','done'].forEach(x=>{
+      const el=document.getElementById('f-'+x);
+      el.className='ghost !rounded-full';
+      el.style.background=x===v?'rgba(139,92,246,.16)':'';
+      el.style.color=x===v?'var(--primary)':'';
+    });
     await loadDeals();
   }
 
   async function openDetail(id){
     const{data:d}=await sb.from('deals').select('*').eq('id',id).single();
     if(!d)return;
-    const labels={escrow:'Эскроу',review:'Проверка',done:'Завершено',dispute:'Спор'};
     const photosBlock = (d.photo_urls && d.photo_urls.length)
       ? '<div class="card p-6 mb-5"><h4 class="font-black mb-3">Фото ('+d.photo_urls.length+')</h4><div class="grid grid-cols-3 gap-2">'+d.photo_urls.map(u=>'<img src="'+u+'" class="w-full h-24 object-cover rounded-2xl cursor-pointer" onclick="window.open(\''+u+'\',\'_blank\')">').join('')+'</div></div>'
       : '';
-    document.getElementById('detailBody').innerHTML=`<div class="card p-6 mb-5"><div class="flex justify-between items-start gap-3 mb-4"><div><span class="badge ${d.status} mb-3">${labels[d.status]}</span><h3 class="text-2xl font-black">${d.name}</h3></div><div class="text-right"><p class="text-[11px] text-slate-400">ID: ${d.id.slice(0,8)}</p><p class="text-2xl font-black text-blue-600 mt-1">${sum(d.price)}</p></div></div><div class="grid grid-cols-2 gap-3 text-sm"><div class="bg-slate-50 rounded-2xl p-4"><p class="text-slate-400 text-xs mb-1">Контрагент</p><p class="font-black">${d.counterparty}</p></div><div class="bg-slate-50 rounded-2xl p-4"><p class="text-slate-400 text-xs mb-1">Срок</p><p class="font-black">${d.deadline}</p></div></div></div><div class="card p-6 mb-5"><h4 class="font-black mb-3">Условия</h4><p class="text-sm text-slate-600">${d.description||'—'}</p></div>${photosBlock}<div class="grid grid-cols-2 gap-3"><button onclick="toast('Скопировано')" class="secondary">Поделиться</button>${d.status!=='done'?`<button onclick="openDispute('${d.id}')" class="primary">Открыть спор</button>`:'<button class="secondary">Закрыто</button>'}</div>`;
+    const contractBlock = d.contract_text ? '<div class="card p-6 mb-5"><h4 class="font-black mb-3">Договор</h4><p class="text-sm muted whitespace-pre-wrap">'+d.contract_text+'</p></div>' : '';
+    document.getElementById('detailBody').innerHTML=`<div class="card p-6 mb-5"><div class="flex justify-between items-start gap-3 mb-4"><div><span class="badge ${d.status} mb-3">${STATUS_LABELS[d.status]}</span><h3 class="text-2xl font-black">${d.name}</h3></div><div class="text-right"><p class="text-[11px] muted">ID: ${d.id.slice(0,8)}</p><p class="text-2xl font-black mt-1" style="color:var(--primary)">${sum(d.price)}</p></div></div><div class="grid grid-cols-2 gap-3 text-sm"><div class="surface p-4"><p class="text-xs mb-1 muted">Контрагент</p><p class="font-black">${d.counterparty}</p></div><div class="surface p-4"><p class="text-xs mb-1 muted">Срок</p><p class="font-black">${d.deadline}</p></div></div></div><div class="card p-6 mb-5"><h4 class="font-black mb-3">Условия</h4><p class="text-sm muted">${d.description||'—'}</p></div>${contractBlock}${photosBlock}<div class="grid grid-cols-2 gap-3"><button onclick="toast('Скопировано')" class="secondary">Поделиться</button>${d.status!=='done'?`<button onclick="openDispute('${d.id}')" class="primary">Открыть спор</button>`:'<button class="secondary">Закрыто</button>'}</div>`;
     go('detail');
   }
 
   async function openDispute(id){
-    const{data}=await sb.from('deals').select('name').eq('id',id).single();
+    const{data}=await sb.from('deals').select('*').eq('id',id).single();
     if(data)document.getElementById('disputeTitle').textContent=data.name;
+    currentDisputeDeal=data||null;
     await sb.from('deals').update({status:'dispute'}).eq('id',id);
     chatMessages=[{author:'ai',text:'Здравствуйте. Я ИИ-арбитр SENIM. Опишите проблему.'}];
     renderChat();go('dispute');
   }
 
-  function pickType(v){
+  function setDealType(v){
     currentDealType=v;
-    const map={product:'Параметры товара, сумму и срок проверки.',service:'Услугу, дедлайн и критерии приемки.',rental:'Срок аренды и депозит.',vehicle:'VIN и условия осмотра.'};
-    document.getElementById('typeCaption').textContent=map[v];
-    go('form');
+    document.querySelectorAll('.type-chip').forEach(el=>el.classList.toggle('active',el.dataset.type===v));
+    const meta=TYPE_META[v]||TYPE_META.product;
+    document.getElementById('typeHint').textContent=meta.hint;
   }
+
+  function resetForm(){
+    ['dealName','dealPrice','dealParty','dealDeadline','dealDesc'].forEach(id=>document.getElementById(id).value='');
+    pendingPhotos=[];
+    document.getElementById('photoPreview').innerHTML='';
+    document.getElementById('photoArea').innerHTML=PHOTO_PLACEHOLDER;
+    setDealType('product');
+  }
+
+  function newDeal(){resetForm();go('form')}
 
   function recalc(){const v=parseFloat(document.getElementById('dealPrice').value)||0;const f=Math.round(v*.01);document.getElementById('payBase').textContent=sum(v);document.getElementById('payFee').textContent=sum(f);document.getElementById('payTotal').textContent=sum(v+f)}
 
-  function toPayment(){
+  async function toPayment(){
     if(!document.getElementById('dealName').value.trim()||!document.getElementById('dealPrice').value||!document.getElementById('dealParty').value.trim()||!document.getElementById('dealDeadline').value.trim()){toast('Заполните все поля');return}
-    recalc();go('payment');
+    const btn=document.getElementById('toContractBtn');btn.disabled=true;
+    spin(true,'Формируем договор...','ИИ составляет условия сделки');
+    const dealDraft={
+      name:document.getElementById('dealName').value.trim(),
+      price:parseFloat(document.getElementById('dealPrice').value),
+      counterparty:document.getElementById('dealParty').value.trim(),
+      deadline:document.getElementById('dealDeadline').value.trim(),
+      description:document.getElementById('dealDesc').value.trim(),
+      deal_type:currentDealType,
+      user_email:currentUser?currentUser.email:''
+    };
+    try{
+      const{data,error}=await sb.functions.invoke('generate-contract',{body:{deal:dealDraft}});
+      if(error||!data?.contract)throw error||new Error('empty');
+      generatedContract=data.contract;
+    }catch(e){
+      generatedContract='Не удалось сгенерировать договор автоматически. Сумма: '+sum(dealDraft.price)+'. Предмет: '+dealDraft.name+'. Контрагент: '+dealDraft.counterparty+'. Срок: '+dealDraft.deadline+'. Условия: '+(dealDraft.description||'—')+'.';
+      toast('ИИ недоступен, показан базовый черновик');
+    }
+    document.getElementById('contractText').textContent=generatedContract;
+    btn.disabled=false;
+    spin(false);go('contract');
   }
-
-  let pendingPhotos = [];
 
   function previewPhotos(input){
     const preview = document.getElementById('photoPreview');
@@ -362,17 +463,17 @@
       reader.readAsDataURL(file);
     });
     const area = document.getElementById('photoArea');
-    area.innerHTML = '<i class="fa-solid fa-check text-emerald-500 text-xl mb-1 block"></i><p class="text-sm font-black text-emerald-600">' + pendingPhotos.length + ' фото добавлено</p>';
+    area.innerHTML = '<i class="fa-solid fa-check text-xl mb-1 block" style="color:var(--teal)"></i><p class="text-sm font-black" style="color:var(--teal)">' + pendingPhotos.length + ' фото добавлено</p>';
   }
 
   function removePhoto(idx){
     pendingPhotos.splice(idx,1);
     if(pendingPhotos.length===0){
       document.getElementById('photoPreview').innerHTML='';
-      document.getElementById('photoArea').innerHTML='<i class="fa-solid fa-camera text-slate-400 text-2xl mb-2 block"></i><p class="text-sm text-slate-400 font-bold">Нажмите чтобы добавить фото</p><p class="text-xs text-slate-400 mt-1">JPG, PNG до 5MB</p>';
+      document.getElementById('photoArea').innerHTML=PHOTO_PLACEHOLDER;
     } else {
       document.getElementById('photoPreview').children[idx] && document.getElementById('photoPreview').children[idx].remove();
-      document.getElementById('photoArea').innerHTML='<i class="fa-solid fa-check text-emerald-500 text-xl mb-1 block"></i><p class="text-sm font-black text-emerald-600">'+pendingPhotos.length+' фото добавлено</p>';
+      document.getElementById('photoArea').innerHTML='<i class="fa-solid fa-check text-xl mb-1 block" style="color:var(--teal)"></i><p class="text-sm font-black" style="color:var(--teal)">'+pendingPhotos.length+' фото добавлено</p>';
     }
   }
 
@@ -394,28 +495,42 @@
   async function createDeal(){
     if(!currentUser){toast('Сначала войдите');go('login');return}
     spin(true,'Создаём договор...');
-    const{data:deal,error}=await sb.from('deals').insert({user_id:currentUser.id,name:document.getElementById('dealName').value.trim(),price:parseFloat(document.getElementById('dealPrice').value),counterparty:document.getElementById('dealParty').value.trim(),deadline:document.getElementById('dealDeadline').value.trim(),description:document.getElementById('dealDesc').value.trim(),deal_type:currentDealType,status:'escrow',photo_urls:[]}).select().single();
+    const{data:deal,error}=await sb.from('deals').insert({user_id:currentUser.id,name:document.getElementById('dealName').value.trim(),price:parseFloat(document.getElementById('dealPrice').value),counterparty:document.getElementById('dealParty').value.trim(),deadline:document.getElementById('dealDeadline').value.trim(),description:document.getElementById('dealDesc').value.trim(),deal_type:currentDealType,status:'escrow',photo_urls:[],contract_text:generatedContract||null}).select().single();
     if(error){spin(false);toast('Ошибка: '+error.message);return}
     if(pendingPhotos.length){
       const urls=await uploadPhotos(deal.id);
       if(urls.length) await sb.from('deals').update({photo_urls:urls}).eq('id',deal.id);
     }
-    pendingPhotos=[];
-    document.getElementById('photoPreview').innerHTML='';
-    document.getElementById('photoArea').innerHTML='<i class="fa-solid fa-camera text-slate-400 text-2xl mb-2 block"></i><p class="text-sm text-slate-400 font-bold">Нажмите чтобы добавить фото</p><p class="text-xs text-slate-400 mt-1">JPG, PNG до 5MB</p>';
+    resetForm();
     spin(false);
-    ['dealName','dealPrice','dealParty','dealDeadline','dealDesc'].forEach(id=>document.getElementById(id).value='');
+    generatedContract='';
     await loadDeals();toast('Сделка создана и защищена ✓');go('history');
   }
 
   function renderChat(){const box=document.getElementById('chat');box.innerHTML='';chatMessages.forEach(m=>{const el=document.createElement('div');el.className='msg '+m.author;el.textContent=m.text;box.appendChild(el)});box.scrollTop=box.scrollHeight}
 
-  function sendMessage(){const input=document.getElementById('msgInput');const v=input.value.trim();if(!v)return;chatMessages.push({author:'user',text:v});input.value='';renderChat();setTimeout(()=>{chatMessages.push({author:'ai',text:'Сообщение получено и добавлено в материалы арбитража.'});renderChat()},500)}
+  async function sendMessage(){
+    const input=document.getElementById('msgInput');const v=input.value.trim();if(!v)return;
+    chatMessages.push({author:'user',text:v});input.value='';renderChat();
+    chatMessages.push({author:'ai',text:'Печатает...',pending:true});renderChat();
+    try{
+      const history=chatMessages.filter(m=>!m.pending).map(m=>({role:m.author==='user'?'user':'assistant',content:m.text}));
+      const{data,error}=await sb.functions.invoke('arbitrage',{body:{deal:currentDisputeDeal,messages:history}});
+      if(error||!data?.reply)throw error||new Error('empty');
+      chatMessages=chatMessages.filter(m=>!m.pending);
+      chatMessages.push({author:'ai',text:data.reply});
+    }catch(e){
+      chatMessages=chatMessages.filter(m=>!m.pending);
+      chatMessages.push({author:'ai',text:'ИИ-арбитр временно недоступен. Попробуйте ещё раз через минуту.'});
+    }
+    renderChat();
+  }
 
   function prefill(kind){
     const map={product:{type:'product',name:'PlayStation 5 Digital',price:210000,party:'Нуржан Т.',deadline:'2 дня на проверку',desc:'Товар новый, в заводской упаковке.'},service:{type:'service',name:'Разработка лендинга',price:280000,party:'Apex Studio',deadline:'До 25 июля',desc:'Передача макета и верстки.'}};
     const t=map[kind];if(!t)return;
-    currentDealType=t.type;
+    resetForm();
+    setDealType(t.type);
     document.getElementById('dealName').value=t.name;document.getElementById('dealPrice').value=t.price;document.getElementById('dealParty').value=t.party;document.getElementById('dealDeadline').value=t.deadline;document.getElementById('dealDesc').value=t.desc;
     recalc();go('form');toast('Шаблон подставлен');
   }
@@ -428,6 +543,12 @@
     sb.auth.onAuthStateChange((_,session)=>{if(session?.user){currentUser=session.user;updateUserUI()}});
   }
   init();
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{
+      navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    });
+  }
 </script>
 </body>
 </html>
